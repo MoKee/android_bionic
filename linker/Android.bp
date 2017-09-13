@@ -100,7 +100,7 @@ cc_binary {
     ],
 
     product_variables: {
-        lineage: {
+        mokee: {
             needs_text_relocations: {
                 cppflags: ["-DTARGET_NEEDS_PLATFORM_TEXT_RELOCATIONS"],
             },
