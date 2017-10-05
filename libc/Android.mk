@@ -607,7 +607,7 @@ libc_openbsd_src_files_32 += \
 libc_common_cflags := \
     -D_LIBC=1 \
     -Wall -Wextra -Wunused \
-
+ -fno-stack-protector
 use_clang := $(USE_CLANG_PLATFORM_BUILD)
 
 # Clang/llvm has incompatible long double (fp128) for x86_64.
