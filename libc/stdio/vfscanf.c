@@ -31,7 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#include <ctype.h>
 #include <wctype.h>
 #include <inttypes.h>
 #include <stdarg.h>
@@ -40,6 +39,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "local.h"
+
+#include <private/bionic_ctype.h>
 
 #ifdef FLOATING_POINT
 #include "floatio.h"
@@ -129,9 +130,9 @@ __svfscanf(FILE *fp, const char *fmt0, __va_list ap)
 		c = *fmt++;
 		if (c == 0)
 			return (nassigned);
-		if (isspace(c)) {
+		if (IsSpace(c)) {
 			while ((fp->_r > 0 || __srefill(fp) == 0) &&
-			    isspace(*fp->_p))
+			    IsSpace(*fp->_p))
 				nread++, fp->_r--, fp->_p++;
 			continue;
 		}
@@ -297,7 +298,7 @@ literal:
 			return (EOF);
 
 		default:	/* compat */
-			if (isupper(c))
+			if (IsUpper(c))
 				flags |= LONG;
 			c = CT_INT;
 			base = 10;
@@ -315,7 +316,7 @@ literal:
 		 * that suppress this.
 		 */
 		if ((flags & NOSKIP) == 0) {
-			while (isspace(*fp->_p)) {
+			while (IsSpace(*fp->_p)) {
 				nread++;
 				if (--fp->_r > 0)
 					fp->_p++;
@@ -531,7 +532,7 @@ literal:
 				else
 					wcp = &twc;
 				n = 0;
-				while (!isspace(*fp->_p) && width != 0) {
+				while (!IsSpace(*fp->_p) && width != 0) {
 					if (n == (int)MB_CUR_MAX) {
 						fp->_flags |= __SERR;
 						goto input_failure;
@@ -578,7 +579,7 @@ literal:
 #endif /* SCANF_WIDE_CHAR */
 			if (flags & SUPPRESS) {
 				n = 0;
-				while (!isspace(*fp->_p)) {
+				while (!IsSpace(*fp->_p)) {
 					n++, fp->_r--, fp->_p++;
 					if (--width == 0)
 						break;
@@ -588,7 +589,7 @@ literal:
 				nread += n;
 			} else {
 				p0 = p = va_arg(ap, char *);
-				while (!isspace(*fp->_p)) {
+				while (!IsSpace(*fp->_p)) {
 					fp->_r--;
 					*p++ = *fp->_p++;
 					if (--width == 0)
