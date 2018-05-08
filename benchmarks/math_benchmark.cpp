@@ -227,3 +227,15 @@ static void BM_math_fabs(benchmark::State& state) {
   SetLabel(state);
 }
 BENCHMARK_COMMON_VALS(BM_math_fabs);
+
+BIONIC_BENCHMARK_WITH_ARG(BM_math_fabs, "MATH_COMMON");
+
+static void BM_math_sincos(benchmark::State& state) {
+  d = 1.0;
+  while (state.KeepRunning()) {
+    double s, c;
+    sincos(d, &s, &c);
+    d += s + c;
+  }
+}
+BIONIC_BENCHMARK(BM_math_sincos);
