@@ -710,10 +710,6 @@ static std::vector<ShimDescriptor> g_ld_all_shim_libs;
 // for libB where libA also links against libB).
 static linked_list_t<const ShimDescriptor> g_active_shim_libs;
 
-// matched_pairs are shim libs that load over their corresponding
-// target libraries/executables, which are DT_NEEDED.
-std::vector<const ShimDescriptor *> matched_pairs;
-
 static void reset_g_active_shim_libs(void) {
   g_active_shim_libs.clear();
   for (const auto& pair : g_ld_all_shim_libs) {
@@ -738,18 +734,20 @@ void parse_LD_SHIM_LIBS(const char* path) {
   reset_g_active_shim_libs();
 }
 
-void shim_matching_pairs(const char *const path) {
-  INFO("Finding shim libs for \"%s\"\n", path);
+std::vector<const ShimDescriptor*> shim_matching_pairs(const char* path) {
+  std::vector<const ShimDescriptor*> matched_pairs;
 
-  g_active_shim_libs.for_each([&](const ShimDescriptor *a_pair) {
+  g_active_shim_libs.for_each([&](const ShimDescriptor* a_pair) {
     if (a_pair->first == path) {
       matched_pairs.push_back(a_pair);
     }
   });
 
-  g_active_shim_libs.remove_if([&](const ShimDescriptor *a_pair) {
+  g_active_shim_libs.remove_if([&](const ShimDescriptor* a_pair) {
     return a_pair->first == path;
   });
+
+  return matched_pairs;
 }
 #endif
 
@@ -1170,9 +1168,6 @@ const char* fix_dt_needed(const char* dt_needed, const char* sopath __unused) {
 
 template<typename F>
 static void for_each_dt_needed(const ElfReader& elf_reader, F action) {
-#ifdef LD_SHIM_LIBS
-  for_each_matching_shim(elf_reader.name(), action);
-#endif
   for (const ElfW(Dyn)* d = elf_reader.dynamic(); d->d_tag != DT_NULL; ++d) {
     if (d->d_tag == DT_NEEDED) {
       action(fix_dt_needed(elf_reader.get_string(d->d_un.d_val), elf_reader.name()));
@@ -1357,6 +1352,12 @@ static bool load_library(android_namespace_t* ns,
       si->set_soname(elf_reader.get_string(d->d_un.d_val));
     }
   }
+
+#ifdef LD_SHIM_LIBS
+  for_each_matching_shim(realpath.c_str(), [&](const char* name) {
+    load_tasks->push_back(LoadTask::create(name, si, ns, task->get_readers_map()));
+  });
+#endif
 
   for_each_dt_needed(task->get_elf_reader(), [&](const char* name) {
     load_tasks->push_back(LoadTask::create(name, si, ns, task->get_readers_map()));
