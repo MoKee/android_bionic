@@ -198,7 +198,7 @@ cc_defaults {
         debuggable: {
             cppflags: ["-DUSE_LD_CONFIG_FILE"],
         },
-        lineage: {
+        mokee: {
             target_process_sdk_version_override: {
                 cppflags: ["-DSDK_VERSION_OVERRIDES=\"%s\""],
             },
