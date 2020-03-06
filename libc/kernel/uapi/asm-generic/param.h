@@ -22,7 +22,7 @@
 #define HZ 100
 #endif
 #ifndef EXEC_PAGESIZE
-#define EXEC_PAGESIZE 4096
+#define EXEC_PAGESIZE 0x4000
 #endif
 #ifndef NOGROUP
 #define NOGROUP (- 1)
